@@ -1,0 +1,1 @@
+# babel-plugin-import-multiple-to-import-default

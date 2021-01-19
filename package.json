@@ -1,5 +1,5 @@
 {
-  "name": "@babel/plugin-import-named-to-import-default",
+  "name": "babel-plugin-import-named-to-import-default",
   "version": "0.0.1",
   "description": "",
   "main": "./lib/index.js",

@@ -3,55 +3,39 @@ import { isImportSpecifier, ImportDeclaration, ImportSpecifier, Identifier } fro
 import { NodePath } from '@babel/core';
 
 export default (_: any, config: any) => {
-    const s = new WeakSet();
+    if (config.libraryName === undefined) {
+        console.warn('config.libraryName is required');
+        return {};
+    }
     return {
         visitor: {
-            ImportDeclaration(nodePath: NodePath<ImportDeclaration>) {
+            ImportDeclaration(nodePath: NodePath<ImportDeclaration>, state: any) {
                 const sourceName = nodePath.node.source.value;
+                const libraryDirectory = config.libraryDirectory ? `/${config.libraryDirectory}` : '';
                 if (sourceName !== config.libraryName) {
                     return;
                 }
-                if (s.has(nodePath.node)) {
-                    return;
-                }
-                const needClone: ImportSpecifier[] = [];
-                const needKeep = [];
-                for (let i = 0; i < nodePath.node.specifiers.length; i++) {
-                    const item = nodePath.node.specifiers[i];
-                    if (isImportSpecifier(item)) {
-                        needClone.push(item);
-                    } else {
-                        needKeep.push(item);
-                    }
-                }
 
-                if (needClone.length !== 0) {
-                    needClone.reverse().forEach((item: ImportSpecifier) => {
+                const sourceValue = nodePath.node.source.value;
+                const memberImports = nodePath.node.specifiers.filter((specifier) => isImportSpecifier(specifier));
+                const fullImports = nodePath.node.specifiers.filter((specifier) => !isImportSpecifier(specifier));
+                if (memberImports.length > 0) {
+                    // make newNodes
+                    const newNodes = memberImports.map((item: ImportSpecifier) => {
                         const localName = item.local.name;
                         const importedName = (item.imported as Identifier).name;
-
-                        const newNode = types.clone(nodePath.node);
-
-                        // change source
-                        const newSource = types.stringLiteral(`${newNode.source.value}/${importedName}`);
-                        newNode.source = newSource;
-
-                        // change specifiers
-
+                        const newSource = types.stringLiteral(`${sourceValue}${libraryDirectory}/${importedName}`);
                         const newSpecifier = types.importDefaultSpecifier(types.identifier(localName));
-                        newNode.specifiers = [newSpecifier];
-
-                        // insert
-                        s.add(newNode);
-                        nodePath.insertAfter(newNode as any);
-                        // return newNode;
+                        const newNode = types.importDeclaration([newSpecifier], newSource);
+                        return newNode;
                     });
 
-                    // change old node specifiers
-                    nodePath.node.specifiers = needKeep;
-                    if (needKeep.length === 0) {
-                        !nodePath.removed && nodePath.remove();
+                    if (fullImports.length > 0) {
+                        newNodes.unshift(types.importDeclaration(fullImports, nodePath.node.source));
                     }
+
+                    // replace
+                    nodePath.replaceWithMultiple(newNodes);
                 }
             }
         }

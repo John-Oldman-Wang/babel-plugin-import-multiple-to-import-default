@@ -8,7 +8,7 @@
     "format": "prettier-tslint fix '**/*.(ts|tsx)'",
     "prettier": "pretty-quick --staged",
     "babel": "babel ./src/test/source/index.js --watch --out-file ./dist/index.js",
-    "test": "mocha"
+    "test": "nyc mocha"
   },
   "husky": {
     "hooks": {
@@ -19,7 +19,12 @@
     "type": "git",
     "url": "git+https://github.com/nokisnojok/babel-plugin-import-multiple-to-import-default.git"
   },
-  "keywords": [],
+  "keywords": [
+    "babel",
+    "babel plugin",
+    "tree shaking",
+    "es module"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -37,6 +42,7 @@
     "hooks": "^0.3.2",
     "husky": "^4.3.7",
     "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
     "prettier": "^2.2.1",
     "prettier-tslint": "^0.4.2",
     "pretty-quick": "^3.1.0",

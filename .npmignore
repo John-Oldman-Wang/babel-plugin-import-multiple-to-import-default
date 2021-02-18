@@ -1,1 +1,7 @@
 /src
+.nyc_output
+.prettierignore
+.prettierrc
+.mocharc.json
+tsconfig.json
+tslint.json
